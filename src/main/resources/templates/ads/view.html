@@ -1,0 +1,142 @@
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layout" >
+<head>
+</head>
+<body>
+
+<section layout:fragment="header" class="jumbotron">
+	<div class="container">
+		<h1 th:text="${creative.name}"></h1>
+		<p th:text="${creative.desc}"></p>
+	</div>
+</section>
+
+<section layout:fragment="content" class="container">
+	<div class="col-md-6">
+		<h2>Message:</h2>
+		<p th:text="${creative.message}"></p>
+		
+		<h2>Tags</h2>
+		<table class="table" id="tags">
+			<thead><tr><th>Tag</th><th>Action</th></tr></thead>
+			<tbody>
+				<tr th:each="tag : ${creative.tags}">
+					<td th:text="${tag}"></td>
+					<td><!-- <a>Delete</a> --></td>
+				</tr>
+			</tbody>
+		</table>
+		<h1>Add Tag</h1>
+		<form id="addTagForm">
+			<div class="form-group">
+				<label for="tag">Tag</label>
+				<input type="text" id="tag" name="tag" class="form-control" placeholder="Name" />
+			</div>
+			<div class="form-group"><button type="submit" class="btn btn-success">Add</button></div>
+		</form>
+		<div id="uploadVideoForm" th:if="${creative.type == 'video'}">
+			<h2>Upload Video</h2>
+			<div th:if="${creative.imageHash != null}" class="alert alert-warning"><strong>Warning!</strong> Video already uploaded...</div>
+			<form method="POST" enctype="multipart/form-data" th:action="${'/ads/' + creative.id + '/creative/video/'}">
+				<table>
+					<tr><td>Video to upload:</td><td><input type="file" name="vidfile" /></td></tr>
+					<tr><td>Thumbnail to upload:</td><td><input type="file" name="imgfile" /></td></tr>
+					<tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+				</table>
+			</form>
+		</div>
+		<div id="uploadImageForm" th:if="${creative.type == 'image'}">
+			<h2>Upload Image</h2>
+			<div th:if="${creative.imageHash != null}" class="alert alert-warning"><strong>Warning!</strong> Image already uploaded...</div>
+			<form method="POST" enctype="multipart/form-data" th:action="${'/ads/' + creative.id + '/creative/image/'}">
+				<table>
+					<tr><td>Image to upload:</td><td><input type="file" name="imgfile" /></td></tr>
+					<tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+				</table>
+			</form>
+		</div>
+		<h2>Status:</h2>
+		<div id="activateForm" class="" th:classappend="${creative.status == 0} ? '' : hidden">
+			<p>Inactive</p>
+			<form id="activateForm" th:if="${creative.imageHash != null}">
+				<button type="submit" class="btn btn-success">Activate</button>
+			</form>
+			<div th:if="${creative.imageHash == null}" class="alert alert-info"><strong>Info!</strong> Please upload creative first...</div>
+		</div>
+		<div id="deactivateForm" class="" th:classappend="${creative.status == 1} ? '' : hidden">
+			<p>Active</p>
+			<p id="postId" th:text="${creative.postId}"></p>
+			<!-- <form id="deactivateForm">
+				<button type="submit" class="btn btn-success">Deactivate</button>
+			</form> -->
+		</div>
+		<div th:if="${creative.status == 2}" class="alert alert-info"><strong>Info!</strong> Ad has been launched...</div>
+	</div>
+	
+	
+	
+<script type="text/javascript" th:inline="javascript">
+//<![CDATA[
+    
+	function addTag() {
+    	
+		var dat = $("#addTagForm").serializeObject();
+    	
+		$.ajax({
+	           type: "POST",
+	           contentType : "application/json",
+	           url: '/ads/[[${creative.id}]]/tags/',
+	           data: JSON.stringify(dat),
+	           dataType: 'json',
+	   		   timeout : 100000,
+	           success: function(data)
+	           {
+	        	   $("#tags").append('<tr><td>' + data.tag + '</td><td><a>Delete</a></td></tr>');
+	           }
+	         });
+	}
+	
+	function activateAd() {
+    	
+		var dat = $("#activateForm").serializeObject();
+    	
+		$.ajax({
+	           type: "POST",
+	           contentType : "application/json",
+	           url: '/ads/[[${creative.id}]]/activate',
+	           data: JSON.stringify(dat),
+	           dataType: 'json',
+	   		   timeout : 100000,
+	           success: function(data)
+	           {
+	        	   $("#activateForm").toggleClass('hidden');
+	        	   $("#deactivateForm").toggleClass('hidden');
+	        	   $("#postId").html(data.postId);
+	           }
+	         });
+	}
+           
+	$(function() {
+		
+		$("#activateForm").submit(function(event) {
+			event.preventDefault();
+			activateAd();
+		});
+	 
+	});
+	
+	$(function() {
+		
+		$("#addTagForm").submit(function(event) {
+			event.preventDefault();
+			addTag();
+		});
+	 
+	});
+//]]> 
+</script>
+</section>
+
+</body>
+</html>

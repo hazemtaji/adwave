@@ -1,0 +1,92 @@
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layout" >
+<head>
+</head>
+<body>
+
+<section layout:fragment="header" class="jumbotron">
+	<div class="container">
+		<h1>Ads</h1>
+		<p>Manage your ad creatives. The more information provided about the creative the better the system will be able to target the ad.</p>
+		<!-- <p><a class="btn btn-primary btn-lg" href="#" role="button">Start!</a></p> -->
+	</div>
+</section>
+
+<section layout:fragment="content" class="container">
+	<div class="col-md-6">
+		<table class="table" id="creatives">
+			<thead><tr><th>Name</th><th>Description</th><th>Type</th></tr></thead>
+			<tbody>
+				<tr th:each="creative : ${creatives}">
+					<td><a th:text="${creative.name}" th:href="${'/ads/' + creative.id}"></a></td>
+					<td th:text="${creative.desc}"></td>
+					<td th:text="${creative.type}"></td>
+				</tr>
+			</tbody>
+		</table>
+		<h1>Add Creative</h1>
+		<form id="addCreativeForm">
+			<div class="form-group">
+				<label for="name">Name</label>
+				<input type="text" id="name" name="name" class="form-control" placeholder="Name" />
+			</div>
+			<div class="form-group">
+				<label for="name">Description</label>
+				<input type="text" name="desc" class="form-control" placeholder="Description" />
+			</div>
+			<div class="form-group">
+				<label for="message">Message</label>
+				<input type="text" name="message" class="form-control" placeholder="Message" />
+			</div>
+			<div class="form-group">
+				<label for="name">Type</label>
+				<select name="type" class="form-control">
+					<option label="Image" value="image" />
+					<option label="Video" value="video" />
+				</select>
+			</div>
+			<div class="form-group"><button type="submit" class="btn btn-success">Add</button></div>
+		</form>
+	</div>
+	
+	
+	
+<script type="text/javascript" th:inline="javascript">
+//<![CDATA[
+    
+	
+	
+    //using FormData() object
+	function addCreative() {
+    	
+		var dat = $("#addCreativeForm").serializeObject();
+    	
+		$.ajax({
+	           type: "POST",
+	           contentType : "application/json",
+	           url: '/ads/',
+	           data: JSON.stringify(dat),
+	           dataType: 'json',
+	   		   timeout : 100000,
+	           success: function(data)
+	           {
+	        	   $("#creatives").append('<tr><td><a href="/ads/' + data.id + '">' + data.name + '</td><td>' + data.desc + '</td><td>' + data.type + '</td></tr>')
+	           }
+	         });
+	}
+           
+	$(function() {
+		
+		$("#addCreativeForm").submit(function(event) {
+			event.preventDefault();
+			addCreative();
+		});
+	 
+	});
+//]]> 
+</script>
+</section>
+
+</body>
+</html>
